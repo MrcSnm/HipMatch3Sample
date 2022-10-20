@@ -1,8 +1,11 @@
 module script.board;
 import script.config;
+import script.piece;
 import hip.util.conv;
 import hip.math.utils;
 import hip.api;
+import hip.util.algorithm;
+import hip.tween;
 
 
 private enum spritesheetPath = "sprites/assets_candy.png";
@@ -17,8 +20,9 @@ class Board
     Spritesheet spritesheet;
     IHipTextureRegion[] candies;
     IHipSprite test;
-    int[][] board;
+    Piece[][] board;
 
+    bool isSwapping;
     byte[2] selectedPiece = nullPiece;
     private int xOffsetPerCandy;
     private int yOffsetPerCandy;
@@ -29,8 +33,10 @@ class Board
         HipAssetManager.awaitLoad();
         cursor = new Cursor(this);
         boardSprites = cast(IHipTexture)texWork.asset;
+
+        import hip.util.conv;
         spritesheet = cropSpritesheetRowsAndColumns(boardSprites, spritesheetRows, spritesheetColumns);
-        board = new int[][](BOARD_SIZE, BOARD_SIZE);
+        board = new Piece[][](BOARD_SIZE, BOARD_SIZE);
         for(int i = 0; i < 3; i++)
             for(int j = 0; j < 5; j++)
                 candies~= spritesheet[i, j];
@@ -42,22 +48,26 @@ class Board
     }
     protected final void generateBoard()
     {
+        xOffsetPerCandy = cast(int)(candies[0].getWidth() * PIECE_DISTANCE_MULTIPLIER);
+        yOffsetPerCandy = cast(int)(candies[0].getHeight() * PIECE_DISTANCE_MULTIPLIER);
+
         for(int i = 0; i < BOARD_SIZE; i++)
         {
             for(int j = 0; j < BOARD_SIZE; j++)
             {
                 import hip.util.conv;
-                board[i][j] = Random.range(0, cast(int)candies.length - 1);
+                int type = Random.range(0, cast(int)candies.length - 1);
+                board[i][j] = new Piece(type, candies[type], xOffsetPerCandy*j, yOffsetPerCandy*i);
             }
         }
-        xOffsetPerCandy = cast(int)(candies[0].getWidth() * PIECE_DISTANCE_MULTIPLIER);
-        yOffsetPerCandy = cast(int)(candies[0].getHeight() * PIECE_DISTANCE_MULTIPLIER);
     }
 
     final void unselectPiece(){selectedPiece = nullPiece;}
 
     void selectPiece(ubyte x, ubyte y)
     {
+        if(isSwapping)
+            return;
         if(selectedPiece == [x, y])
             unselectPiece();
         else if(selectedPiece != nullPiece)
@@ -84,7 +94,23 @@ class Board
 
     void swapPieces(ubyte x1, ubyte y1, ubyte x2, ubyte y2)
     {
-        log("Can move!");
+        if(isSwapping)
+            return;
+        isSwapping = true;
+        Piece a = board[y1][x1];
+        Piece b = board[y2][x2];
+        swap(board[y1][x1], board[y2][x2]);
+        
+
+        HipTimerManager.addTween(
+            new HipTweenSpawn(false, [
+                HipTween.to!(["x", "y"])(PIECE_SWAP_TIME, a, [b.x, b.y]),
+                HipTween.to!(["x", "y"])(PIECE_SWAP_TIME, b, [a.x, a.y])
+            ]).addOnFinish(()
+            {
+                isSwapping = false;
+            })
+        );
     }
 
     void update()
@@ -95,12 +121,11 @@ class Board
 
     void draw()
     {
-        // drawSprite(test);
         for(int i = 0; i < BOARD_SIZE; i++)
         {
             for(int j = 0; j < BOARD_SIZE; j++)
             {
-                drawRegion(candies[board[i][j]], xOffsetPerCandy * j, yOffsetPerCandy * i);
+                board[i][j].draw();
             }
         }
         if(selectedPiece != nullPiece)

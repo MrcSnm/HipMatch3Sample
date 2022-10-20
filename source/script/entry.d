@@ -3,6 +3,7 @@ import script.config;
 import script.board;
 import hip.api;
 import hip.util.conv;
+import hip.timer;
 
 //TODO: Future support for enums (need the recursive folder generator)
 // import hip.assetmanager;
@@ -10,13 +11,12 @@ import hip.util.conv;
 
 class MainScene : AScene
 {
-	Array2D!IHipTextureRegion spritesheet;
 	IHipSprite matchTexture;
 	Board board;
 	/** Constructor */
 	override void initialize()
 	{
-		setFont(null);
+		// setFont(null);
 		board = new Board();
 
 		Viewport v = getCurrentViewport();
@@ -24,9 +24,7 @@ class MainScene : AScene
 		v.setWorldSize(GAME_WIDTH, GAME_HEIGHT);
 		setCameraSize(GAME_WIDTH, GAME_HEIGHT);
 		setViewport(v);
-		// matchTexture = newSprite("sprites/assets_candy.png");
-		// spritesheet = cropSpritesheetRowsAndColumns(matchTexture.getTexture(), 7, 7);
-		// matchTexture.setRegion(spritesheet[0,0]);
+
 	}
 	/** Called every frame */
 	override void update(float dt)
@@ -36,7 +34,6 @@ class MainScene : AScene
 	/** Renderer only, may not be called every frame */
 	override void render()
 	{
-		// drawSprite(matchTexture);
 		board.draw();
 		// drawText("Scripting test!", 100, 100);
 		// drawText("First game test?", 100, 200);
