@@ -9,6 +9,7 @@ import hip.tween;
 
 
 private enum spritesheetPath = "sprites/assets_candy.png";
+private enum explosionPath = "sprites/explotion.png";
 private enum spritesheetRows = 7;
 private enum spritesheetColumns = 7;
 private enum byte[2] nullPiece = [-1, -1];
@@ -19,20 +20,31 @@ class Board
     IHipTexture boardSprites;
     Spritesheet spritesheet;
     IHipTextureRegion[] candies;
-    IHipSprite test;
     Piece[][] board;
 
-    bool isSwapping;
+    IHipAnimationTrack explosionAnimation;
+    IHipTexture explosionTexture;
+
+    bool canInput = true;
     byte[2] selectedPiece = nullPiece;
     private int xOffsetPerCandy;
     private int yOffsetPerCandy;
 
+
     this()
     {
         auto texWork = HipAssetManager.loadTexture(spritesheetPath);
+        auto exploTexWork = HipAssetManager.loadTexture(explosionPath);
         HipAssetManager.awaitLoad();
         cursor = new Cursor(this);
         boardSprites = cast(IHipTexture)texWork.asset;
+        explosionTexture = cast(IHipTexture)exploTexWork.asset;
+
+        
+        explosionAnimation = newHipAnimationTrack("Explosion", 24, false)
+            .addFrames(
+                cropSpritesheetRowsAndColumns(explosionTexture, 2, 4)
+            );
 
         import hip.util.conv;
         spritesheet = cropSpritesheetRowsAndColumns(boardSprites, spritesheetRows, spritesheetColumns);
@@ -42,31 +54,32 @@ class Board
                 candies~= spritesheet[i, j];
         
         generateBoard();
-
-        test = newSprite(null);
-        test.setTexture(boardSprites);
     }
     protected final void generateBoard()
     {
         xOffsetPerCandy = cast(int)(candies[0].getWidth() * PIECE_DISTANCE_MULTIPLIER);
         yOffsetPerCandy = cast(int)(candies[0].getHeight() * PIECE_DISTANCE_MULTIPLIER);
 
-        for(int i = 0; i < BOARD_SIZE; i++)
-        {
-            for(int j = 0; j < BOARD_SIZE; j++)
+        for(ubyte y = 0; y < BOARD_SIZE; y++)
+        {   
+            for(ubyte x = 0; x < BOARD_SIZE; x++)
             {
                 import hip.util.conv;
                 int type = Random.range(0, cast(int)candies.length - 1);
-                board[i][j] = new Piece(type, candies[type], xOffsetPerCandy*j, yOffsetPerCandy*i);
+                board[y][x] = new Piece(type, candies[type], xOffsetPerCandy*x, yOffsetPerCandy*y, x, y);
             }
         }
+
+        board[0][0] = new Piece(0, candies[0], 0, 0, 0, 0);
+        board[1][0] = new Piece(0, candies[0], 0, yOffsetPerCandy*1, 0, 1);
+        board[2][0] = new Piece(0, candies[0], 0, yOffsetPerCandy*2, 0, 2);
     }
 
     final void unselectPiece(){selectedPiece = nullPiece;}
 
     void selectPiece(ubyte x, ubyte y)
     {
-        if(isSwapping)
+        if(!canInput)
             return;
         if(selectedPiece == [x, y])
             unselectPiece();
@@ -78,6 +91,56 @@ class Board
         }
         else
             selectedPiece = [x, y];
+    }
+
+    bool calculateMatches(out Piece[3][] matches)
+    {
+        for(int y = 0; y < BOARD_SIZE; y++)
+        {
+            int matchCount = 1;
+            for(int x = 1; x < BOARD_SIZE; x++) 
+            {
+                if(board[y][x] is null || board[y][x-1] is null)
+                {
+                    matchCount = 1;
+                    continue;
+                }
+                if(board[y][x].type == board[y][x-1].type)
+                {
+                    if(++matchCount == 3)
+                    {
+                        matches~= [board[y][x-2], board[y][x-1], board[y][x]];
+                        matchCount = 1;
+                    }
+                }
+                else
+                    matchCount = 1;
+            }
+        }
+
+        for(int x = 0; x < BOARD_SIZE; x++) 
+        {
+            int matchCount = 1;
+            for(int y = 1; y < BOARD_SIZE; y++)
+            {
+                if(board[y][x] is null || board[y-1][x] is null)
+                {
+                    matchCount = 1;
+                    continue;
+                }
+                if(board[y][x].type == board[y-1][x].type)
+                {
+                    if(++matchCount == 3)
+                    {
+                        matches~= [board[y-2][x], board[y-1][x], board[y][x]];
+                        matchCount = 1;
+                    }
+                }
+                else
+                    matchCount = 1;
+            }
+        }
+        return matches.length != 0;
     }
 
 
@@ -92,28 +155,97 @@ class Board
         return xDiff + yDiff == 1; //0 means don't move, greater than 1 means diagonal or far swap
     }
 
+    ///Returns if any piece has fallen
+    bool makePiecesFall()
+    {
+        bool anyFall = false;
+        HipSpawn spawn;
+        for(int x = 0; x < BOARD_SIZE; x++)
+        {
+            //The target must be the board's end
+            int targetY = BOARD_SIZE - 1;
+            for(int y = BOARD_SIZE - 1; y >= 0; y--)
+            {
+                if(board[y][x] is null)
+                    continue;
+                else
+                {
+                    if(targetY != y) //If there is no in between them, no need to swap
+                    {
+                        anyFall = true;
+                        int yDiff = targetY - y;
+                        Piece p = board[y][x];
+                        p.gridY = cast(ubyte)targetY;
+
+                        if(spawn is null)
+                        {
+                            spawn = new HipSpawn();
+                        }
+
+                        spawn.add(
+                            HipTween.by!(["y"])(0.1, p, [yDiff * 100])
+                        );
+                        swap(board[targetY][x], board[y][x]);
+                    }
+                    targetY-= 1; //The last empty space will be the one up above
+                }
+            }
+        }
+        if(anyFall)
+        {
+            canInput = false;
+            HipTimerManager.addTimer(spawn.addOnFinish(()
+            {
+                canInput = true;
+                logg("Finished!", canInput);
+                updateBoard();
+            }));
+        }
+        return anyFall;
+    }
+
+    protected void updateBoard()
+    {
+        Piece[3][] matches;
+        if(calculateMatches(matches))
+        {
+            foreach(match; matches)
+            {
+                foreach(piece; match)
+                {
+                    HipGameUtils.playAnimationAtPosition(cast(int)piece.x, cast(int)piece.y, explosionAnimation, 0.1, 0);
+                    board[piece.gridY][piece.gridX] = null;
+                }
+            }
+            makePiecesFall();
+        }
+    }
+    protected void onSwapFinish()
+    {
+        canInput = true;
+        updateBoard();
+    }
+
     void swapPieces(ubyte x1, ubyte y1, ubyte x2, ubyte y2)
     {
-        if(isSwapping)
+        if(!canInput)
             return;
-        isSwapping = true;
+        canInput = false;
         Piece a = board[y1][x1];
         Piece b = board[y2][x2];
         swap(board[y1][x1], board[y2][x2]);
+        a.swapGridPosition(b);
         
 
-        HipTimerManager.addTween(
-            new HipTweenSpawn(false, [
+        HipTimerManager.addTimer(
+            new HipSpawn(
                 HipTween.to!(["x", "y"])(PIECE_SWAP_TIME, a, [b.x, b.y]),
                 HipTween.to!(["x", "y"])(PIECE_SWAP_TIME, b, [a.x, a.y])
-            ]).addOnFinish(()
-            {
-                isSwapping = false;
-            })
+            ).addOnFinish((){onSwapFinish();})
         );
     }
 
-    void update()
+    void update(float deltaTime)
     {
         cursor.update();
     }
@@ -125,7 +257,8 @@ class Board
         {
             for(int j = 0; j < BOARD_SIZE; j++)
             {
-                board[i][j].draw();
+                if(board[i][j] !is null)
+                    board[i][j].draw();
             }
         }
         if(selectedPiece != nullPiece)
