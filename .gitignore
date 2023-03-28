@@ -1,0 +1,8 @@
+
+.dub
+.vs
+bin
+*.exe
+*.dll
+*.so
+*.lib
