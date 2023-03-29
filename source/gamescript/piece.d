@@ -32,6 +32,6 @@ class Piece
     void draw(int xOffset, int yOffset)
     {
         if(region !is null)
-            drawRegion(region, cast(int)x+xOffset, cast(int)y+yOffset, 0, HipColor.white, scaleX, scaleY);
+            drawRegion(region, cast(int)x+xOffset, cast(int)y+yOffset, 0, HipColorf.white, scaleX, scaleY);
     }
 }

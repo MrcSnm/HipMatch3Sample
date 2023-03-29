@@ -41,7 +41,7 @@
 			"lflags-windows": [
 				"/WX"
 			],
-			"postBuildCommands": ["cd G:\\HipremeEngine && dub -c script -- G:\\HipremeEngine\\projects\\match3"]
+			"postGenerateCommands": ["cd G:\\HipremeEngine && dub -c script -- G:\\HipremeEngine\\projects\\match3"]
 		}
 	],
 	"versions" : [

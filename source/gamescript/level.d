@@ -39,11 +39,9 @@ class Level
         HipTimerManager.addRenderTimer(new HipTimer("Render Level", 5, HipTimerType.progressive).addHandler(()
         {
             setFont(font);
-            setGeometryColor(HipColor(0.0, 0.5, 0.8, 0.8));
+            setGeometryColor(HipColorf(0.0, 0.5, 0.8, 0.8));
             fillRectangle(cast(int)rectX,cast(int)rectY, GAME_WIDTH, GREET_RECT_HEIGHT);
-            renderGeometries();
             text.draw();
-            renderTexts();
         }));
 
         HipTimerManager.addTimer(new HipSequence("Greet", 

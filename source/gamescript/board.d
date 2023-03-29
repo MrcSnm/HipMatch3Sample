@@ -357,7 +357,6 @@ class Board : IHipPreloadable
                     board[i][j].draw(BOARD_OFFSET_X, BOARD_OFFSET_Y);
             }
         }
-        renderSprites();
 
         if(selectedPiece != nullPiece)
         {
@@ -366,7 +365,6 @@ class Board : IHipPreloadable
         }
 
         cursor.draw(BOARD_OFFSET_X,BOARD_OFFSET_Y, pieceWidth, pieceHeight);
-        renderGeometries();
     }
 }
 

@@ -5,8 +5,8 @@ import hip.api.graphics.color;
 enum GAME_WIDTH = 1280;
 enum GAME_HEIGHT = 720;
 
-enum CURSOR_SELECTED_COLOR = HipColor(1.0, 0.0, 0.0, 0.6);
-enum CURSOR_HOVER_COLOR = HipColor(1.0, 0.0, 0.0, 0.4);
+enum CURSOR_SELECTED_COLOR = HipColorf(1.0, 0.0, 0.0, 0.6);
+enum CURSOR_HOVER_COLOR = HipColorf(1.0, 0.0, 0.0, 0.4);
 
 
 enum int BOARD_OFFSET_X = 600;

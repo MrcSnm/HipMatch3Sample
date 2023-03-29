@@ -136,7 +136,6 @@ class Game : IHipPreloadable
     void render()
     {
         background.draw();
-        renderSprites();
 		if(isPlayingLevel)
 			board.draw();
         if(hud !is null)

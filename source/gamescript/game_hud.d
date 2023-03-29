@@ -41,7 +41,7 @@ class GameHud
             pressEnter = new Text("Touch to Start the Game", GAME_WIDTH/2, 0);
         else
             pressEnter = new Text("Press Enter to Start the Game", GAME_WIDTH/2, 0);
-        pressEnter.color = HipColor.black;
+        pressEnter.color = HipColorf.black;
 
         int textX = rectX;
 
@@ -117,7 +117,7 @@ public:
         {
             setFont(font);
             ///Rect
-            setGeometryColor(HipColor(0.3, 0.3, 0.3, 0.8));
+            setGeometryColor(HipColorf(0.3, 0.3, 0.3, 0.8));
             fillRectangle(50, rectX, rectWidth, 250);
 
             //Info
@@ -128,7 +128,6 @@ public:
         }
         else if(gameOver !is null)
             gameOver.draw();
-        renderTexts();
     }
 
     void showGameFinish()
