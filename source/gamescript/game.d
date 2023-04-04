@@ -20,7 +20,6 @@ class Game : IHipPreloadable
     bool hasStarted;
     bool isPlayingLevel;
 
-    AHipAudioSource musicSrc;
     AHipAudioSource source;
 
 
@@ -29,11 +28,10 @@ class Game : IHipPreloadable
 
     @Asset("sounds/song17mono.mp3")
     IHipAudioClip music;
+    AHipAudioSource musicSrc;
 
     @Asset("data/levels.txt", &Level.parseLevels)
     Level[] levels;
-
-
 
 
     this()
@@ -47,7 +45,6 @@ class Game : IHipPreloadable
         musicSrc = HipAudio.getSource();
         musicSrc.clip = music;
         musicSrc.loop = true;
-        musicSrc.play();
     }
 
     void advanceLevel(void delegate(Level) onNextLevel)
@@ -88,6 +85,8 @@ class Game : IHipPreloadable
     {
         hasStarted = true;
         background.fade();
+        musicSrc.play();
+        
         advanceLevel((Level level)
         {
             isPlayingLevel = true;

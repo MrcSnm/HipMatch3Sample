@@ -423,7 +423,7 @@ class Cursor
             moveX(-1);
         else if(HipInput.isKeyJustPressed('d'))
             moveX(1);
-        else if(HipInput.isKeyJustPressed(HipKey.ENTER))
+        else if(HipInput.isKeyJustPressed(HipKey.ENTER) || HipInput.isDoubleClicked())
             select();
     }
 
