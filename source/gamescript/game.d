@@ -125,7 +125,7 @@ class Game : IHipPreloadable
 
     void update(float deltaTime)
     {
-        if(isPlayingLevel)
+        if(hud.gameOver is null && isPlayingLevel)
 		{
 			board.update(deltaTime);
 			hud.update(deltaTime);

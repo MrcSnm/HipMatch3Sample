@@ -113,6 +113,8 @@ public:
             setFont(pressEnterFont);
             pressEnter.draw();
         }
+        else if(gameOver !is null)
+            gameOver.draw();
         else if(game.isPlayingLevel)
         {
             setFont(font);
@@ -126,8 +128,6 @@ public:
             levelText.draw();
             goalText.draw();
         }
-        else if(gameOver !is null)
-            gameOver.draw();
     }
 
     void showGameFinish()

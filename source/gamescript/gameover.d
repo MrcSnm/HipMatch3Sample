@@ -17,7 +17,7 @@ class GameOver
     }
     void draw()
     {
-        drawRectangle(0,0, GAME_WIDTH, GAME_HEIGHT, HipColorf(0,0,0,alpha));
+        fillRectangle(0,0, GAME_WIDTH, GAME_HEIGHT, HipColorf(0,0,0,alpha));
         drawText(gameWon ? "Thanks for playing!" : "Game Over!", GAME_WIDTH/2, GAME_HEIGHT/2, HipColorf(1,1,1,alpha));
     }
 }

@@ -16,8 +16,10 @@
 	},
 
 	"dflags-ldc": [
-		"-link-defaultlib-shared=false",
 		"-fvisibility=hidden"
+	],
+	"lflags-windows": [
+		"/WHOLEARCHIVE:hipengine_api"
 	],
 	"dflags": [
 		"-J."

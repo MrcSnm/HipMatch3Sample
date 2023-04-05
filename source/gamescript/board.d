@@ -121,7 +121,6 @@ class Board : IHipPreloadable
             return nullPiece;
 
         
-        logVars!worldPos;
         worldPos[0]-= BOARD_OFFSET_X;
         worldPos[1]-= BOARD_OFFSET_Y;
 
@@ -409,11 +408,13 @@ class Cursor
 
     void update()
     {
-        if(HipInput.isMouseButtonJustPressed())
+        if(HipInput.isMouseButtonJustReleased())
         {
             byte[2] pos = board.getPiecePosition(HipInput.getWorldMousePosition());
             if(pos != nullPiece)
                 moveTo(pos[0], pos[1]);
+            if(HipInput.isDoubleClicked())
+                select();
         }
         else if(HipInput.isKeyJustPressed('w'))
             moveY(-1);
@@ -423,7 +424,7 @@ class Cursor
             moveX(-1);
         else if(HipInput.isKeyJustPressed('d'))
             moveX(1);
-        else if(HipInput.isKeyJustPressed(HipKey.ENTER) || HipInput.isDoubleClicked())
+        else if(HipInput.isKeyJustPressed(HipKey.ENTER))
             select();
     }
 
