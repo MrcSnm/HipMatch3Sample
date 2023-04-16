@@ -34,8 +34,8 @@ class Background : IHipPreloadable
     {
         if(bkg !is null)
         {
-            drawTexture(bkg, 0, 0, 0, HipColorf(1, 1, 1, bkgOpacity), targetScaleRate, targetScaleRate);
-            drawTexture(bkgBlur, 0, 0, 0, HipColorf(1, 1, 1, bkgBlurOpacity), targetScaleRate, targetScaleRate);
+            drawTexture(bkg, 0, 0, 0, HipColor.alpha(bkgOpacity), targetScaleRate, targetScaleRate);
+            drawTexture(bkgBlur, 0, 0, 0, HipColor.alpha(bkgBlurOpacity), targetScaleRate, targetScaleRate);
         }
     }    
 }
