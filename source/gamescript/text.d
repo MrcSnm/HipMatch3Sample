@@ -5,7 +5,7 @@ class Text
 {
     float x, y;
     string text;
-    HipColorf color = HipColorf.white;
+    HipColor color = HipColor.white;
     IHipFont font;
 
     int boundsWidth, boundsHeight;
