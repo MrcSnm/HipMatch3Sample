@@ -30,7 +30,7 @@ class Level
     int getPieceType()
     {
         import hip.math.random;
-        return Random.randomSelect(subset);
+        return Random.select(subset);
     }
 
 
