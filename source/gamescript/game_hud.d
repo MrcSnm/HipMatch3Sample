@@ -37,7 +37,7 @@ class GameHud
         uint height  = font.lineBreakHeight;
 
 
-        version(Android)
+        static if(InputIsTouch)
             pressEnter = new Text("Touch to Start the Game", GAME_WIDTH/2, 0);
         else
             pressEnter = new Text("Press Enter to Start the Game", GAME_WIDTH/2, 0);
@@ -59,7 +59,7 @@ public:
 			HipTween.to(PRESS_ENTER_TWEEN_TIME, [&pressEnter.y], [GAME_HEIGHT/2 - pressEnterFont.lineBreakHeight/2]).setEasing(HipEasing.easeOutBounce).addOnFinish(()
 			{
 
-                version(Android)
+                static if(InputIsTouch)
                 {
                     HipInput.addTouchListener(HipMouseButton.any, (meta)
                     {
