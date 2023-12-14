@@ -1,10 +1,10 @@
 module gamescript.level;
-import gamescript.text;
 import gamescript.config;
 import hip.api;
 import hip.timer;
 import hip.tween;
 import hip.util.conv;
+import hip.game2d.text;
 
 class Level
 {
@@ -12,18 +12,20 @@ class Level
     int targetGoal;
     int duration;
     float rectX = 0, rectY = 0;
-    Text text;
-    IHipFont font;
+    float txtY = 0;
+    HipText text;
 
     enum GREET_RECT_HEIGHT = GAME_HEIGHT/6;
 
     this(int targetGoal, int duration, int[] subset, int level)
     {
-        font = HipDefaultAssets.getDefaultFontWithSize(62);
         this.targetGoal = targetGoal;
         this.duration = duration;
         this.subset = subset;
-        text = new Text("Level "~level.to!string, GAME_WIDTH/2, 50);
+        text = new HipText("Level "~level.to!string, GAME_WIDTH/2, 50);
+        text.color = HipColor.white;
+        text.font = HipDefaultAssets.getDefaultFontWithSize(62);
+        txtY = text.y;
         text.setAlign(HipTextAlign.CENTER, HipTextAlign.CENTER);
     }
 
@@ -36,18 +38,18 @@ class Level
 
     void greetLevel(void delegate() onFinish)
     {
-        HipTimerManager.addRenderTimer(new HipTimer("Render Level", 5, HipTimerType.progressive).addHandler(()
+        HipTimerManager.addRenderTimer(new HipTimer("Render Level", 10, HipTimerType.progressive).addHandler(()
         {
-            setFont(font);
             setGeometryColor(HipColor(0.0, 0.5, 0.8, 0.8));
             fillRectangle(cast(int)rectX,cast(int)rectY, GAME_WIDTH, GREET_RECT_HEIGHT);
+            text.y = cast(int)txtY;
             text.draw();
         }));
 
         HipTimerManager.addTimer(new HipSequence("Greet", 
-            HipTween.by(1.5f, [&rectY, &text.y], [cast(float)GAME_HEIGHT/2 - GREET_RECT_HEIGHT/2]).setEasing(HipEasing.easeOutBack),
+            HipTween.by(1.5f, [&rectY, &txtY], [cast(float)GAME_HEIGHT/2 - GREET_RECT_HEIGHT/2]).setEasing(HipEasing.easeOutBack),
             new HipTimer("Wait", 1),
-            HipTween.by(1.5f, [&rectY, &text.y], [cast(float)GAME_HEIGHT/2 + GREET_RECT_HEIGHT/2]).setEasing(HipEasing.easeInBack)
+            HipTween.by(1.5f, [&rectY, &txtY], [cast(float)GAME_HEIGHT/2 + GREET_RECT_HEIGHT/2]).setEasing(HipEasing.easeInBack)
         ).addOnFinish(onFinish));
     }
 

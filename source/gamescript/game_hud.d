@@ -1,8 +1,10 @@
 module gamescript.game_hud;
 import gamescript.gameover;
-import gamescript.text;
+import hip.game2d.text;
+// import gamescript.text;
 import gamescript.game;
 import gamescript.config;
+import hip.util.conv;
 import hip.tween;
 import hip.api;
 import hip.timer;
@@ -11,20 +13,21 @@ class GameHud
 {
     Game game;
 
-    Text pressEnter;
-    Text scoreText;
-    Text timeText;
-    Text levelText;
-    Text goalText;
+    HipText pressEnter;
+    HipText scoreText;
+    HipText timeText;
+    HipText levelText;
+    HipText goalText;
 
 
 
-    IHipFont font;
-    IHipFont pressEnterFont;
+    HipFont font;
+    HipFont pressEnterFont;
     HipTimer timer;
     GameOver gameOver;
     private int time = 60;
     private enum rectX = 100;
+    private enum rectY = 50;
     private enum rectWidth = 400;
 
     this(Game game)
@@ -38,17 +41,24 @@ class GameHud
 
 
         static if(InputIsTouch)
-            pressEnter = new Text("Touch to Start the Game", GAME_WIDTH/2, 0);
+            pressEnter = new HipText("Touch to Start the Game", GAME_WIDTH/2, 0, pressEnterFont);
         else
-            pressEnter = new Text("Press Enter to Start the Game", GAME_WIDTH/2, 0);
+            pressEnter = new HipText("Press Enter to Start the Game", GAME_WIDTH/2, 0, pressEnterFont);
         pressEnter.color = HipColor.black;
 
-        int textX = rectX;
+        pressEnter.setAlign(HipTextAlign.CENTER, HipTextAlign.CENTER);
 
-        scoreText = new Text("Score: 0", textX, 100, font, rectWidth);
-        timeText = new Text("Time: 60", textX, scoreText.y+height, font, rectWidth);
-        levelText = new Text("Level 1", textX, timeText.y+height, font, rectWidth);
-        goalText = new Text("Goal: 1000", textX, levelText.y+height, font, rectWidth);
+        int textX = rectX/2;
+
+        scoreText = new HipText("Score: 0", textX, 100, font, rectWidth);
+        timeText = new HipText("Time: 60", textX, scoreText.y+height, font, rectWidth);
+        levelText = new HipText("Level 1", textX, timeText.y+height, font, rectWidth);
+        goalText = new HipText("Goal: 1000", textX, levelText.y+height, font, rectWidth);
+
+        foreach(txt; [scoreText, timeText, levelText, goalText])
+        {
+            txt.setAlign(HipTextAlign.CENTER, HipTextAlign.CENTER);
+        }
         game.setGameHud(this);
     }
 
@@ -56,7 +66,7 @@ public:
     void showEnterToStartGame()
     {
 		HipTimerManager.addTimer(
-			HipTween.to(PRESS_ENTER_TWEEN_TIME, [&pressEnter.y], [GAME_HEIGHT/2 - pressEnterFont.lineBreakHeight/2]).setEasing(HipEasing.easeOutBounce).addOnFinish(()
+			HipTween.to!(["y"])(PRESS_ENTER_TWEEN_TIME, pressEnter, [cast(int)(GAME_HEIGHT/2 - pressEnterFont.lineBreakHeight/2)]).setEasing(HipEasing.easeOutBounce).addOnFinish(()
 			{
 
                 static if(InputIsTouch)
@@ -86,19 +96,19 @@ public:
 
     void setScore(int score)
     {
-        scoreText.setText("Score: ", score);
+        scoreText.text = "Score: "~ score.to!string;
     }
 
     void setLevel(int level)
     {
-        levelText.setText("Level ", level);
+        levelText.text = "Level " ~ level.to!string;
     }
-    void setGoal(int goal){goalText.setText("Goal: ", goal);}
+    void setGoal(int goal){goalText.text = "Goal: " ~ goal.to!string;}
     
     void setDuration(int duration)
     {
         time = duration;
-        timeText.setText("Time: ", duration);
+        timeText.text = "Time: "~ duration.to!string;
     }
 
     void update(float deltaTime)
@@ -110,7 +120,6 @@ public:
     {
         if(!game.hasStarted)
         {
-            setFont(pressEnterFont);
             pressEnter.draw();
         }
         else if(gameOver !is null)
@@ -120,7 +129,7 @@ public:
             setFont(font);
             ///Rect
             setGeometryColor(HipColor(0.3, 0.3, 0.3, 0.8));
-            fillRectangle(50, rectX, rectWidth, 250);
+            fillRectangle(rectX, rectY, rectWidth, 250);
 
             //Info
             scoreText.draw();
@@ -145,8 +154,9 @@ protected:
 
     void subtractTime()
     {
+        import hip.util.conv;
         time-= 1;
-        timeText.setText("Time: ", time);
+        timeText.text = "Time: "~time.to!string;
         if(time <= 0)
         {
             timer.stop();
