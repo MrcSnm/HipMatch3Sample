@@ -48,7 +48,7 @@ class GameHud
 
         pressEnter.setAlign(HipTextAlign.CENTER, HipTextAlign.CENTER);
 
-        int textX = rectX/2;
+        int textX = rectX;
 
         scoreText = new HipText("Score: 0", textX, 100, font, rectWidth);
         timeText = new HipText("Time: 60", textX, scoreText.y+height, font, rectWidth);
@@ -58,6 +58,7 @@ class GameHud
         foreach(txt; [scoreText, timeText, levelText, goalText])
         {
             txt.setAlign(HipTextAlign.CENTER, HipTextAlign.CENTER);
+            txt.color = HipColor.white;
         }
         game.setGameHud(this);
     }
